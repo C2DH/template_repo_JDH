@@ -9,7 +9,7 @@ The preflight action generates a report within the repository that contains info
 
 ## Contents
 
-`author_guideline_template.ipynb` - This Jupyter notebook provides an example and a simple structure that authors can use to write articles for the Journal of Digital History. You can rename it according to your article name.
+`article.ipynb` - This Jupyter notebook provides an example and a simple structure that authors can use to write articles for the Journal of Digital History. You can rename it according to your article name.
 
 `.github/workflows/github-actions-preflight.yml` - This workflow file contains the preflight action that can be triggered automatically on commit or manually using the workflow_dispatch event to check that the article respects the Journal guidelines.
 
