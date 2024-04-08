@@ -10,6 +10,13 @@ code: 6
 
 ### Size
 **total cells: 20**
+## Kernel Checks: 
+
+> [!CAUTION]
+ > Error: Python versions don't match. The notebook is using **python-3.7.10**, when **python-3.7
+** is required.
+> [!TIP]
+ > Try changing **runtime.txt** to resolve the error above.
 
 ### Citations Not Found
 
@@ -27,6 +34,8 @@ Total number of tables: 1
 
 ### Check JavaScript
 No JavaScript code found in output cells.
+### Check JavaScript (plotly)
+**plotly** library is not present in **requirements.txt**
 
 
 ### Check Tags
