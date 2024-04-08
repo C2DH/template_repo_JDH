@@ -17,7 +17,7 @@ jobs:
         uses: c2dh/journal-of-digital-history-ipynb-preflight-action@master
         with:
           notebook: 'article.ipynb'
-          functions: 'checkcitation,checkoutput,checkhtml,checkjavascript,checktags,checkurls'
+          functions: 'checkkernel,checkcitation,checkoutput,checkhtml,checkjavascript,checktags,checkurls'
           output_md: 'report.md'
       # Use the output from the `preflight` step
       - name: Use the output
