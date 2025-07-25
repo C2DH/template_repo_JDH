@@ -1,1 +1,1 @@
-
+jupyterlab-citation-manager==1.0.0
