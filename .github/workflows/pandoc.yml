@@ -1,0 +1,40 @@
+on: [workflow_dispatch]
+
+name: GitHub Actions for pandoc
+jobs:
+  pandoc:
+    runs-on: ubuntu-latest
+    name: nbconvert
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: deleting pandoc branch if exists
+        shell: bash
+        run: |
+          git push origin -d pandoc &>/dev/null || true 
+      
+      - name: extracting branch name & creating the new pandoc branch
+        shell: bash
+        run: |
+          echo "GitHub reft_name ${{ github.ref_name }}"
+          git checkout -b pandoc
+          git push -u origin pandoc
+        id: extract_branch
+      - name: retreiving name of the article
+        id: getfile
+        run: |
+          FIRST_FILE=$(ls *.ipynb | sort | head -n 1 | sed -e 's/\.ipynb$//')
+          echo "FIRST_IPYNB_FILE=$FIRST_FILE" >> $GITHUB_ENV
+      - name: pandoc convertion to docx
+        uses: docker://pandoc/latex:2.9
+        with:
+          args: --output=${{ env.FIRST_IPYNB_FILE }}.docx ${{ env.FIRST_IPYNB_FILE }}.ipynb 
+
+      - name: committing changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Automated commit
+          branch: pandoc
+          create_branch: true
+  
