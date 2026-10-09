@@ -19,7 +19,6 @@ The preflight action generates or updates a report markdown file in the reposito
 
 `runtime.txt` - specify the version of the runtime (e.g. the version of Python ). Have python-x.y in runtime.txt to run the repository with Python version x.y
 
-
 ## Getting Started
 
 This repository it's a _template_, that is, it can be used as a starting point for new repositories.
@@ -44,7 +43,40 @@ The preflight action will generate a report in the repository that provides info
 ## MyBinder
 
 The repository also contains a `requirements.txt` and a `runtime.txt` file that can be used to create a MyBinder environment. Check: https://mybinder.readthedocs.io/en/latest/using/config_files.html#preparing-a-repository-for-binder
-The MyBinder environment can be used to run the example notebook to test that the code runs smoothly. 
+The MyBinder environment can be used to run the example notebook to test that the code runs smoothly.
+
+## Dev directory
+
+In this directory, you find scripts that will be used by the JDH team :
+
+- `generate_fingerprint_svg.py` : generate the final version according to what https://journalofdigitalhistory.org/en/fingerprint-viewer is displaying
+- `generate_qrcode.py` : generate a QR code which is a link to the article page (eg. https://journalofdigitalhistory.org/en/article/<article-id>) including the JDH logo (`jdh_logo_onwhitebg_rec.png`)
+- `get_pid.py` : internal helper imported by both scripts above.
+
+### Installation
+
+The librairies which are used by those 2 scripts are described in `requirements-dev.txt` file.
+
+To install the libraries you can do : `pip install -r requirements-dev.txt`.
+
+`generate_fingerprint_svg.py` additionally relies on [Playwright](https://playwright.dev/python/) to render the page in a headless browser, which requires a one-time browser download:
+
+```bash
+playwright install chromium
+```
+
+### Usage
+
+To use both scripts you can either do :
+
+1. `python dev/generate_fingerprint_svg.py` if the script is based in the article repository. Then the script will get the article PID from the name of the repository.
+2. or `python dev/generate_fingerprint_svg.py <pid>` with the article PID as an argument.
+
+Both scripts accept extra options to customize the output; run them with `--help` to see the full list, e.g.:
+
+```bash
+python dev/generate_fingerprint_svg.py --help
+```
 
 ## Contribution Guidelines
 
