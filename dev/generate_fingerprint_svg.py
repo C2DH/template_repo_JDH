@@ -21,6 +21,7 @@ Usage:
 
 import argparse
 import base64
+import logging
 import sys
 import urllib.parse
 
@@ -31,6 +32,13 @@ from playwright.sync_api import sync_playwright
 
 PROXY_PATH_GITHUB = "/proxy-githubusercontent"
 RAW_GITHUB_HOST = "https://raw.githubusercontent.com"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    stream=sys.stderr,
+)
+logger = logging.getLogger(__name__)
 
 
 def get_notebook_url(api_base_url: str, pid: str) -> str:
@@ -198,14 +206,14 @@ def main():
         if args.notebook_url:
             notebook_url = args.notebook_url
         else:
-            print(f"Resolving notebook_url for pid={pid} ...", file=sys.stderr)
+            logger.info(f"Resolving notebook_url for pid={pid} ...")
             encoded_notebook_url = get_notebook_url(api_base_url, pid)
-            print(f"Encoded notebook_url: {encoded_notebook_url}", file=sys.stderr)
+            logger.info(f"Encoded notebook_url: {encoded_notebook_url}")
             notebook_url = decode_notebook_url(encoded_notebook_url)
-        print(f"Notebook URL: {notebook_url}", file=sys.stderr)
+        logger.info(f"Notebook URL: {notebook_url}")
 
         page_url = build_fingerprint_viewer_url(args.base_url, args.lang, notebook_url)
-        print(f"Rendering: {page_url}", file=sys.stderr)
+        logger.info(f"Rendering: {page_url}")
 
         svg_markup = render_fingerprint_svg(
             page_url,
@@ -217,13 +225,13 @@ def main():
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(svg_markup)
 
-        print(f"✅ SVG written to {output_path}")
+        logger.info(f"✅ SVG written to {output_path}")
 
     except requests.HTTPError as e:
-        print(f"API request failed: {e}", file=sys.stderr)
+        logger.error(f"API request failed: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f"Error: {e}")
         sys.exit(1)
 
 
