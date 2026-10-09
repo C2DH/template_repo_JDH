@@ -24,10 +24,9 @@ import sys
 import urllib.parse
 
 import requests
+from get_pid import get_pid_from_repo
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
-
-from .get_pid import get_pid_from_repo
 
 # Path prefix used by the JDH nginx/django proxy to serve raw GitHub content.
 # See jdh/settings.py JDHSEO_PROXY_PATH_GITHUB and jdhapi/signals.py.
@@ -100,15 +99,14 @@ def render_fingerprint_svg(
     timeout_ms: int = 60000,
     headless: bool = True,
 ) -> str:
-    """Load the fingerprint-viewer page in a headless browser and return the SVG markup."""
+    """Load the fingerprint-viewer page in a headless browser and return the SVG markup,
+    with computed CSS styles inlined so the SVG is self-contained/standalone."""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
         try:
             page = browser.new_page()
             page.goto(page_url, wait_until="networkidle", timeout=timeout_ms)
 
-            # Wait until the ArticleFingerprint svg has actual content (cells rendered),
-            # i.e. parsing/fetching of the notebook has completed.
             try:
                 page.wait_for_selector(
                     "svg.ArticleFingerprint g g",
@@ -120,16 +118,37 @@ def render_fingerprint_svg(
                     "The notebook URL may be invalid, unreachable, or malformed."
                 )
 
+            # Relevant CSS properties for SVG shapes; inlining just these
+            # keeps the output clean while preserving the visual result.
             svg_html = page.eval_on_selector(
                 "svg.ArticleFingerprint",
-                "el => el.outerHTML",
+                """(svg) => {
+                    const props = ['fill', 'stroke', 'stroke-width', 'opacity'];
+                    const clone = svg.cloneNode(true);
+                    const originals = svg.querySelectorAll('*');
+                    const clones = clone.querySelectorAll('*');
+                    originals.forEach((el, i) => {
+                        const computed = window.getComputedStyle(el);
+                        const styleStr = props
+                            .map((p) => `${p}:${computed.getPropertyValue(p)}`)
+                            .join(';');
+                        clones[i].setAttribute('style', styleStr);
+                    });
+                    // also inline on the root <svg> itself, just in case
+                    const rootComputed = window.getComputedStyle(svg);
+                    clone.setAttribute(
+                        'style',
+                        props.map((p) => `${p}:${rootComputed.getPropertyValue(p)}`).join(';')
+                    );
+                    return clone.outerHTML;
+                }""",
             )
             if not svg_html:
                 raise RuntimeError("Could not find rendered SVG element on the page.")
             return svg_html
         finally:
             browser.close()
-
+            
 
 def wrap_svg_standalone(svg_fragment: str) -> str:
     """Ensure the SVG has an xml declaration for standalone use."""
