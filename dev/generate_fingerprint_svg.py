@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 """
-generate_fingerprint_svg.py
+generate_fingerlogger.info_svg.py
 
-Generate an ArticleFingerprint SVG for a JDH article, given its pid,
+Generate an ArticleFingerlogger.info SVG for a JDH article, given its pid,
 by resolving the article's notebook_url via the JDH API and then
-rendering the site's /fingerprint-viewer page in a headless browser
+rendering the site's /fingerlogger.info-viewer page in a headless browser
 to extract the live SVG output.
 
 Requirements:
@@ -13,9 +13,10 @@ Requirements:
     playwright install chromium
 
 Usage:
-    python generate_fingerprint_svg.py 12345
-    python generate_fingerprint_svg.py 12345 -o fingerprint.svg
-    python generate_fingerprint_svg.py 12345 --base-url https://journalofdigitalhistory.org --lang en
+    python generate_fingerlogger.info_svg.py          (if script is included in article repository)
+    python generate_fingerlogger.info_svg.py 12345
+    python generate_fingerlogger.info_svg.py 12345 -o fingerlogger.info.svg
+    python generate_fingerlogger.info_svg.py 12345 --base-url https://journalofdigitalhistory.org --lang en
 """
 
 import argparse
@@ -28,8 +29,6 @@ from get_pid import get_pid_from_repo
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
-# Path prefix used by the JDH nginx/django proxy to serve raw GitHub content.
-# See jdh/settings.py JDHSEO_PROXY_PATH_GITHUB and jdhapi/signals.py.
 PROXY_PATH_GITHUB = "/proxy-githubusercontent"
 RAW_GITHUB_HOST = "https://raw.githubusercontent.com"
 
@@ -53,16 +52,7 @@ def get_notebook_url(api_base_url: str, pid: str) -> str:
 def decode_notebook_url(encoded_notebook_url: str) -> str:
     """Decode the API's `notebook_url` field into an absolute, directly
     fetchable raw GitHub URL.
-
-    `Article.notebook_url` is NOT a plain URL: it is
-    base64(percent-encoded relative proxy path), produced in
-    jdhapi/signals.py as something like:
-
-        /proxy-githubusercontent/jdh-observer/<repo>/main/<notebook_path>
-
-    That relative path is only resolvable through the JDH nginx proxy
-    (JDHSEO_PROXY_HOST + JDHSEO_PROXY_PATH_GITHUB). Since the front-end
-    /fingerprint-viewer page fetches the notebook JSON directly from the
+    Since the front-end /fingerprint-viewer page fetches the notebook JSON directly from the
     browser, we need to turn it into a real, CORS-accessible absolute URL
     on raw.githubusercontent.com instead.
     """
@@ -118,8 +108,7 @@ def render_fingerprint_svg(
                     "The notebook URL may be invalid, unreachable, or malformed."
                 )
 
-            # Relevant CSS properties for SVG shapes; inlining just these
-            # keeps the output clean while preserving the visual result.
+            # Relevant CSS properties for SVG shapes; 
             svg_html = page.eval_on_selector(
                 "svg.ArticleFingerprint",
                 """(svg) => {

@@ -9,12 +9,14 @@ Requirements:
     pip install qrcode[pil]
 
 Usage:
+    python generate_qrcode.py    (if script is included in article repository)
     python generate_qrcode.py 12345
     python generate_qrcode.py 12345 -o qrcode.png
     python generate_qrcode.py 12345 --base-url https://journalofdigitalhistory.org --lang en
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -24,6 +26,8 @@ from PIL import Image
 from qrcode.image.styledpil import StyledPilImage
 
 LOGO_PATH = Path(__file__).parent / "jdh_logo_onwhitebg_rec.png"
+
+logger = logging.getLogger(__name__)
 
 
 def build_article_url(base_url: str, lang: str, pid: str) -> str:
@@ -92,18 +96,31 @@ def main():
         default=None,
         help="Skip URL building and encode this URL directly instead of the article page",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable debug logging",
+    )
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(message)s",
+        stream=sys.stderr,
+    )
+
     pid = args.pid or get_pid_from_repo()
 
     output_path = args.output or f"qrcode-{pid}.png"
     url = args.url or build_article_url(args.base_url, args.lang, pid)
 
     try:
-        print(f"Encoding URL: {url}", file=sys.stderr)
+        logger.info("Encoding URL: %s", url)
         generate_qrcode(url, output_path)
-        print(f"✅ QR code written to {output_path}")
+        logger.info("✅ QR code written to %s", output_path)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error("Error: %s", e)
         sys.exit(1)
 
 
