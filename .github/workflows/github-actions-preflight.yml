@@ -5,6 +5,8 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     name: Ipynb for preflight
+    permissions:
+      contents: write  
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
