@@ -24,6 +24,7 @@ import base64
 import logging
 import sys
 import urllib.parse
+from pathlib import Path
 
 import requests
 from get_pid import get_pid_from_repo
@@ -145,7 +146,33 @@ def render_fingerprint_svg(
             return svg_html
         finally:
             browser.close()
-            
+
+
+def svg_to_png(
+    svg_markup: str,
+    output_path: str,
+    scale: float = 3.0,
+    transparent: bool = True,
+) -> None:
+    """Convert standalone SVG markup to a PNG file.
+
+    `scale` multiplies the SVG's pixel size (3 means 3x resolution).
+    """
+    html = (
+        '<!DOCTYPE html><html><body style="margin:0;background:transparent">'
+        f"{svg_markup}</body></html>"
+    )
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        try:
+            page = browser.new_page(device_scale_factor=scale)
+            page.set_content(html)
+            page.locator("svg").first.screenshot(
+                path=output_path, omit_background=transparent
+            )
+        finally:
+            browser.close()
+
 
 def wrap_svg_standalone(svg_fragment: str) -> str:
     """Ensure the SVG has an xml declaration for standalone use."""
@@ -221,6 +248,7 @@ def main():
             headless=not args.show_browser,
         )
         svg_markup = wrap_svg_standalone(svg_markup)
+        svg_to_png(svg_markup, str(Path(output_path).with_suffix(".png")))
 
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(svg_markup)
