@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout article Repository
+        uses: actions/checkout@v4
+
       - name: Install Node
         uses: actions/setup-node@v7
         with:
@@ -18,14 +21,29 @@ jobs:
       - name: Install jdh-cli
         uses: npm -i jdh-cli
 
-      - name: Checkout jdh-typst-template repository
-        uses: git clone https://github.com/C2DH/jdh-typst-template.git
+      - name: Install MyST
+        uses: npm -i mystmd
 
-      - name: Checkout Repository
+      - name: Install Typst
+        uses: typst-community/setup-typst@v5
+        with:
+          typst-version: 0.15.x
+
+      - name: Checkout jdh-typst-template repository
         uses: actions/checkout@v4
+        with:
+          repository: C2DH/jdh-typst-template
+          path: jdh-typst-template
+          ref: v0.1.0
 
       - name: Create _improved directory
         uses: jdh-cli article.md
 
       - name: Create article.pdf inside _improved
-        uses: jdh-cli build
+        uses: jdh-cli build --template "$GITHUB_WORKSPACE/jdh-typst-template"
+
+      - name: Save PDF on repository
+        uses: actions/upload-artifact@v7
+        with:
+          name: article
+          path: ./article.pdf
