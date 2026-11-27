@@ -1,0 +1,31 @@
+name: Generate article.pdf
+
+on:
+  workflow_dispatch:
+
+# see when to trigger the workflow
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install jdh-cli
+        uses: npm -i jdh-cli
+
+      - name: Checkout jdh-typst-template repository
+        uses: git clone https://github.com/C2DH/jdh-typst-template.git
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create _improved directory
+        uses: jdh-cli article.md
+
+      - name: Create article.pdf inside _improved
+        uses: jdh-cli build
